@@ -1,0 +1,41 @@
+import type { Page, SerializedAXNode } from "puppeteer";
+
+export function isWidgetRole(role: string) {
+  return ["link", "button", "input", "radio", "checkbox"].includes(role);
+}
+
+export async function getAccessibility(page: Page) {
+  const access = await page.accessibility.snapshot();
+
+  if (access === null) {
+    throw new Error("Unexpected null accessibility snapshot for " + page.url());
+  }
+
+  const todo = [access];
+  const nodes: SerializedAXNode[] = [];
+  while (todo.length >= 0) {
+    const node = todo.pop();
+    if (!node) {
+      break;
+    }
+
+    nodes.push(node);
+    const children = node.children ?? [];
+    todo.push(...children);
+  }
+
+  return nodes;
+}
+
+export function choose<T>(xs: T[]): T | undefined {
+  return xs[Date.now() % xs.length];
+}
+
+export function getOne<T>(xs: T[]): T {
+  const x = xs[0];
+  if (x === undefined) {
+    throw new Error("Unexpected empty set of rows");
+  }
+
+  return x;
+}

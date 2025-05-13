@@ -1,6 +1,13 @@
+"use client";
+
 import Link from "next/link";
+import { launchCampaign } from "~/agent/fuzz";
 
 export default function HomePage() {
+  const launch = async () => {
+    await launchCampaign({ targets: new Set(["https://chessdojo.club/"]) });
+  };
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
       <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
@@ -19,17 +26,16 @@ export default function HomePage() {
               database and authentication.
             </div>
           </Link>
-          <Link
+          <button
             className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-            href="https://create.t3.gg/en/introduction"
-            target="_blank"
+            onClick={launch}
           >
-            <h3 className="text-2xl font-bold">Documentation →</h3>
+            <h3 className="text-2xl font-bold">TEST 123 →</h3>
             <div className="text-lg">
               Learn more about Create T3 App, the libraries it uses, and how to
               deploy it.
             </div>
-          </Link>
+          </button>
         </div>
       </div>
     </main>

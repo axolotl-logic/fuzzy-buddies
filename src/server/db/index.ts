@@ -16,3 +16,9 @@ const conn = globalForDb.conn ?? postgres(env.DATABASE_URL);
 if (env.NODE_ENV !== "production") globalForDb.conn = conn;
 
 export const db = drizzle(conn, { schema });
+
+export type Buddy = typeof schema.buddiesTable.$inferInsert;
+
+export type Database = typeof db;
+export type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
+export type DBHandle = Database | Transaction;

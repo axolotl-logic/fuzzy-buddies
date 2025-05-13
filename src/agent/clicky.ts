@@ -1,0 +1,40 @@
+// Click on elements within the accessibility tree
+
+import { type Page } from "puppeteer";
+import { choose, getAccessibility, isWidgetRole } from "./utils";
+import type { ActionFunc } from "./types";
+import { db } from "~/server/db";
+import { upsertBuddy } from "./fuzz";
+
+export default async function clicky(): Promise<[number, ActionFunc]> {
+  const buddyRow = await upsertBuddy(db, {
+    name: "Clicky",
+    slug: "clicky",
+    description:
+      "I love clicking things! But I use a screen reader and can only see elements exposed in the accessibility tree. Like the other buddies here, I will let you know if I notice parts of a page that users who use assistive technology like me wont be able to use.",
+  });
+
+  return [
+    buddyRow.id,
+    async (page: Page) => {
+      const els = await getAccessibility(page);
+      const el = choose(
+        els.filter(
+          (el) => isWidgetRole(el.role) && el.name
+        ),
+      );
+      if (!el) {
+        console.warn("FIXME: Widget deadend")
+        return null;
+      }
+
+      const { name, role } = el;
+      if (!name) {
+        console.error("FIXME: name undefined, despite prior checking");
+        return null;
+      }
+
+      return { kind: "click", role, name };
+    },
+  ];
+}
