@@ -30,13 +30,14 @@ export const buddiesTable = createTable(
 
 export const hintsTable = createTable("hints", (d) => ({
   id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
-  formValues: d.json().notNull(),
+  value: d.text(),
+  name: d.text().notNull(),
 }));
 
 export const campaignsTable = createTable("campaigns", (d) => ({
   id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
   startUrl: d.text().notNull(),
-  status: d.varchar({length: 10, enum: ["started", "stopped", "drift"]}),
+  status: d.varchar({ length: 10, enum: ["started", "stopped", "drift"] }),
   depth: d.integer().notNull(),
   createdAt: d
     .timestamp({ withTimezone: true })
@@ -79,3 +80,21 @@ export const actionsFindingsTable = createTable("actions_findings", (d) => ({
   actionId: d.integer().references(() => actionsTable.id),
   findingId: d.integer().references(() => findingsTable.id),
 }));
+
+export type Buddy = typeof buddiesTable.$inferSelect;
+export type NewBuddy = typeof buddiesTable.$inferInsert;
+
+export type Hint = typeof hintsTable.$inferSelect;
+export type NewHint = typeof hintsTable.$inferInsert;
+
+export type Campaign = typeof campaignsTable.$inferSelect;
+export type NewCampaign = typeof campaignsTable.$inferInsert;
+
+export type Action = typeof actionsTable.$inferSelect;
+export type NewAction = typeof actionsTable.$inferInsert;
+
+export type Finding = typeof findingsTable.$inferSelect;
+export type NewFinding = typeof findingsTable.$inferInsert;
+
+export type ActionFinding = typeof actionsFindingsTable.$inferSelect;
+export type NewActionFinding = typeof actionsFindingsTable.$inferInsert;

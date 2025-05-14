@@ -1,7 +1,5 @@
-import AxePuppeteer from "@axe-core/puppeteer";
 import type { AxeResults } from "axe-core";
-import type { Page } from "puppeteer";
-import type { Database, DBHandle, Transaction } from "~/server/db";
+import type { DBHandle } from "~/server/db";
 import { findingsTable } from "~/server/db/schema";
 import { getOne } from "./utils";
 import { eq } from "drizzle-orm";
