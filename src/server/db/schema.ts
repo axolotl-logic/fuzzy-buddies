@@ -28,33 +28,20 @@ export const buddiesTable = createTable(
   (t) => [index().on(t.slug)],
 );
 
-export const statusTable = createTable(
-  "status",
-  (d) => ({
-    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
-    campaignId: d.integer().references(() => campaignsTable.id),
-    running: d.boolean().notNull(),
-    createdAt: d
-      .timestamp({ withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-  }),
-  (t) => [index().on(t.createdAt)],
-);
+export const hintsTable = createTable("hints", (d) => ({
+  id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
+  formValues: d.json().notNull(),
+}));
 
 export const campaignsTable = createTable("campaigns", (d) => ({
   id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
+  startUrl: d.text().notNull(),
+  status: d.varchar({length: 10, enum: ["started", "stopped", "drift"]}),
   depth: d.integer().notNull(),
   createdAt: d
     .timestamp({ withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
-  reproductionMode: d.boolean().notNull().default(false),
-}));
-
-export const hintsTable = createTable("hints", (d) => ({
-  id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
-  formValues: d.json().notNull(),
 }));
 
 export const actionsTable = createTable("actions", (d) => ({

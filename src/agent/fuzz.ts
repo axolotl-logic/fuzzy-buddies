@@ -43,40 +43,40 @@ async function wait(page: Page) {
     console.warn("FIXME: handle network never idle");
   });
 
-  // Wait for all elements to stabalize. Note we've waited at least 300ms by now.
-  await page
-    .locator("*")
-    .setWaitForStableBoundingBox(true)
-    .waitHandle()
-    .catch(() => {
-      console.warn(
-        "FIXME: handle an element not reachinga stable bounding box",
-      );
-    });
-
-  // Finally, rely on the page.
+  // Wait for readyState to reach complete
   await page
     .waitForFunction(() => document.readyState === "complete")
     .catch(() => {
       console.warn("FIXME: handle document.readyState not reaching 'complete'");
     });
+
+  // Wait for all elements to stabalize.
+  await page
+  .locator("*")
+  .setWaitForStableBoundingBox(true)
+  .waitHandle()
+  .catch(() => {
+    console.warn(
+      "FIXME: handle an element not reachinga stable bounding box",
+    );
+  });
 }
 
-export async function launchCampaign({ targets }: { targets: Set<string> }) {
+export async function launchCampaign({ startUrl }: { startUrl: string }) {
   const browser = await puppeteer.launch();
   const depth = 100;
+  const campaignId = getOne(
+    await db
+      .insert(campaignsTable)
+      .values({
+        startUrl,
+        depth,
+        status: "started",
+      })
+      .returning({ id: campaignsTable.id }),
+  ).id;
 
   await db.transaction(async (tx) => {
-    const campaignId = getOne(
-      await tx
-        .insert(campaignsTable)
-        .values({
-          depth,
-          reproductionMode: false,
-        })
-        .returning({ id: campaignsTable.id }),
-    ).id;
-
     const [clickyId, clickyAct] = await clicky();
     //const [phillyId, phillyAct] = await philly();
 
@@ -86,102 +86,102 @@ export async function launchCampaign({ targets }: { targets: Set<string> }) {
     ];
 
     for (const { id: buddyId, act } of buddies) {
-      for (const target of [...targets]) {
-        const page = await browser.newPage();
-        await page.setBypassCSP(true);
+      const page = await browser.newPage();
+      await page.setBypassCSP(true);
 
-        addListeners(page);
+      addListeners(page);
 
-        await page.goto(target, { timeout: 5000 });
-        await wait(page);
+      await page.goto(startUrl, { timeout: 5000 });
+      await wait(page);
 
-        for (let step = 0; step < depth; step++) {
-          const before = (await getAccessibility(page)).map(toObservation);
-          if (before.length === 0) {
-            console.error("FIXME: handle empty observations list");
-            break;
-          }
+      for (let step = 0; step < depth; step++) {
+        const before = (await getAccessibility(page)).map(toObservation);
+        if (before.length === 0) {
+          console.error("FIXME: handle empty observations list");
+          break;
+        }
 
-          const action = await act(page);
-          if (action === null) {
-            break;
-          }
+        const action = await act(page);
+        if (action === null) {
+          break;
+        }
 
-          console.log(action);
+        console.log(action);
 
-          const targetEl = page.locator(
-            `::-p-aria([name="${action.name}"][role=${action.role}])`,
-          ).setEnsureElementIsInTheViewport(false)
+        const targetEl = page
+          .locator(`::-p-aria([name="${action.name}"][role=${action.role}])`)
+          .setEnsureElementIsInTheViewport(false)
           .setVisibility(null)
           .setWaitForEnabled(false)
-          .setWaitForStableBoundingBox(false)
+          .setWaitForStableBoundingBox(false);
 
-          if (targetEl === null) {
-            console.warn("FIXME: handle dissapearing elements");
-            continue;
-          } 
+        if (targetEl === null) {
+          console.warn("FIXME: handle dissapearing elements");
+          continue;
+        }
 
-          switch (action.kind) {
-            case "click": {
-              try {
-                await targetEl.click();
-              } catch {
-                console.error("FIXME: click interaction failed")
-                continue;
-              }
-              break;
+        switch (action.kind) {
+          case "click": {
+            try {
+              await targetEl.click();
+            } catch {
+              console.error("FIXME: click interaction failed");
+              continue;
             }
-            case "click-then-type":
-              try {
-                await targetEl.click();
-              } catch {
-                console.error("FIXME: click of click-then-type interaction failed")
-                continue;
-              }
-              await page.keyboard.type(action.value);
-              break;
+            break;
           }
+          case "click-then-type":
+            try {
+              await targetEl.click();
+            } catch {
+              console.error(
+                "FIXME: click of click-then-type interaction failed",
+              );
+              continue;
+            }
+            await page.keyboard.type(action.value);
+            break;
+        }
 
-          await wait(page);
+        await wait(page);
 
-          const after = (await getAccessibility(page)).map(toObservation);
-          const [added, removed] = diffObservations(before, after);
+        const after = (await getAccessibility(page)).map(toObservation);
+        const [added, removed] = diffObservations(before, after);
 
-          const actionIdRows = await tx
-            .insert(actionsTable)
-            .values({
-              campaignId,
-              buddyId,
-              before,
-              after,
-              added,
-              removed,
-              targetRole: action.role,
-              targetName: action.name,
-              value: "value" in action ? action.value : undefined,
-              url: page.url(),
-              kind: action.kind,
-            })
-            .returning({ id: actionsTable.id });
+        const actionIdRows = await tx
+          .insert(actionsTable)
+          .values({
+            campaignId,
+            buddyId,
+            before,
+            after,
+            added,
+            removed,
+            targetRole: action.role,
+            targetName: action.name,
+            value: "value" in action ? action.value : undefined,
+            url: page.url(),
+            kind: action.kind,
+          })
+          .returning({ id: actionsTable.id });
 
-          const actionId = getOne(actionIdRows).id;
-          const findings = [];
+        const actionId = getOne(actionIdRows).id;
+        const findings = [];
 
-          try {
-            const results = await new AxePuppeteer(page).analyze();
-            findings.push(...(await upsertAxeResults(tx, results)));
-          } catch (e) {
-            console.error("FIXME: Axe analyze failed.", e);
-          }
+        try {
+          const results = await new AxePuppeteer(page).analyze();
+          findings.push(...(await upsertAxeResults(tx, results)));
+        } catch (e) {
+          console.error("FIXME: Axe analyze failed.", e);
+          continue;
+        }
 
-
-          for (const { id: findingId } of findings) {
-            await tx.insert(actionsFindingsTable).values({
-              campaignId,
-              actionId,
-              findingId,
-            });
-          }
+        for (const { id: findingId } of findings) {
+          await tx.insert(actionsFindingsTable).values({
+            campaignId,
+            actionId,
+            findingId,
+          });
         }
       }
     }
