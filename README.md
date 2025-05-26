@@ -21,21 +21,6 @@ The system features a series of testing agents designed to simulate different in
 3. **Accessibility Analysis**: Each interaction is analyzed using axe-core for WCAG compliance
 4. **Finding Documentation**: Issues are automatically categorized and stored with detailed information
 
-### Technical Architecture
-
-- **Frontend**: Next.js 15 with TypeScript, Tailwind CSS, and Radix UI components
-- **Backend**: Server actions with Drizzle ORM and PostgreSQL
-- **Testing Engine**: Puppeteer for browser automation with axe-core for accessibility analysis
-- **Database**: PostgreSQL with tables for campaigns, actions, findings, buddies, and hints
-
-## Key Features
-
-- **Automated Accessibility Testing**: Continuous monitoring using industry-standard axe-core
-- **Interactive Dashboard**: View campaigns, findings, and detailed reports
-- **Buddy Profiles**: Learn about each testing agent's capabilities and focus areas
-- **Finding Management**: Categorized accessibility issues with remediation guidance
-- **Campaign Tracking**: Monitor testing progress and results over time
-
 ## Database Schema
 
 The application tracks:
