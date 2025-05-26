@@ -1,29 +1,104 @@
-# Create T3 App
+# Fuzzy Buddies by Axolotl-Logic
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+Warning, under heavy development.
 
-## What's next? How do I make an app with this?
+Let raccoons rattle your app with independent campaigns of mischief designed for you to better understand how your app behaves and where it is defficient. Did they find a particularly interesting path through your app? Rerun the journey or instantly generate an e2e test case to add to your application.
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+## How It Works
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+### The Buddies
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+The system features a series of testing agents designed to simulate different interaction patterns with your app. They opperate exclusively by reading the accessibility tree of the page, clicking on elements, and typing. This is both a limitation and a super power that allows automated tests to be generated and sessions to be reliably replayed.
 
-## Learn More
+- **Clicky** 🦝👆 - Clicks on random widgets.
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+- **Phillip** 🦝✏️ - Fills out forms and then clicks a button hoping to submit.
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+### Testing Process
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+1. **Campaign Creation**: Users launch testing campaigns by providing a target URL
+2. **Automated Exploration**: The selected buddy navigates through the application for a specified depth
+3. **Accessibility Analysis**: Each interaction is analyzed using axe-core for WCAG compliance
+4. **Finding Documentation**: Issues are automatically categorized and stored with detailed information
 
-## How do I deploy this?
+### Technical Architecture
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+- **Frontend**: Next.js 15 with TypeScript, Tailwind CSS, and Radix UI components
+- **Backend**: Server actions with Drizzle ORM and PostgreSQL
+- **Testing Engine**: Puppeteer for browser automation with axe-core for accessibility analysis
+- **Database**: PostgreSQL with tables for campaigns, actions, findings, buddies, and hints
+
+## Key Features
+
+- **Automated Accessibility Testing**: Continuous monitoring using industry-standard axe-core
+- **Interactive Dashboard**: View campaigns, findings, and detailed reports
+- **Buddy Profiles**: Learn about each testing agent's capabilities and focus areas
+- **Finding Management**: Categorized accessibility issues with remediation guidance
+- **Campaign Tracking**: Monitor testing progress and results over time
+
+## Database Schema
+
+The application tracks:
+
+- **Campaigns**: Testing sessions with start URLs and execution details
+- **Actions**: Individual interactions performed by buddies
+- **Findings**: Accessibility issues discovered during testing
+- **Buddies**: Testing agent profiles and capabilities
+- **Hints**: Guidance and tips for accessibility improvements
+
+## Getting Started
+
+### Installation
+
+1. Clone the repository
+2. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+3. Set up environment variables (copy `.env.example` to `.env.local`)
+
+4. Start the database:
+
+   ```bash
+   ./start-database.sh
+   ```
+
+5. Run database migrations:
+
+   ```bash
+   npm db:migrate
+   ```
+
+6. Start the development server:
+   ```bash
+   npm dev
+   ```
+
+### Usage
+
+1. Navigate to the application homepage
+2. Enter a target URL in the campaign form
+3. Launch the campaign and monitor progress
+4. Review findings and accessibility reports
+5. Click "Explore" to go deeper into your app
+
+## Development
+
+```
+src/
+├── app/            # Next.js app router pages and components
+├── agent/          # Buddy implementations and testing logic
+├── components/     # Reusable UI components
+├── lib/            # Utility functions
+└── server/         # Server actions and database operations
+```
+
+## Contributing
+
+Adding buddies easy! Copy clicky or phillip, edit to your heart's content, then add them to setupBuddies.
+
+## Warning
+
+⚠️ **Important**: Only point the fuzzy buddies at websites you own or have permission to test. The buddies can be aggressive in their testing and may trigger unexpected behaviors on target sites.
