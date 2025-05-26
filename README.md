@@ -2,7 +2,7 @@
 
 Warning, under heavy development.
 
-Let raccoons rattle your app with independent campaigns of mischief designed for you to better understand how your app behaves and where it is defficient. Did they find a particularly interesting path through your app? Rerun the journey or instantly generate an e2e test case to add to your application.
+Let raccoons rattle your app with independent campaigns of mischief designed to help find where your app is defficient and keep it fixed. Did they find a particularly interesting path through your app? Rerun the journey or instantly generate an e2e test case to add to your application.
 
 ## How It Works
 
