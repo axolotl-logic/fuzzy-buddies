@@ -30,12 +30,3 @@ export async function getAccessibility(page: Page) {
 export function choose<T>(xs: T[]): T | undefined {
   return xs[Date.now() % xs.length];
 }
-
-export function getOne<T>(xs: T[]): T {
-  const x = xs[0];
-  if (x === undefined) {
-    throw new Error("Unexpected empty set of rows");
-  }
-
-  return x;
-}

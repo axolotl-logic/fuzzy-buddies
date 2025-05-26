@@ -1,19 +1,20 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { launchCampaign } from "~/agent/fuzz";
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
+import { startCampaign } from "~/server/actions";
 
-export function LaunchCampaignButton() {
+export function LaunchCampaignButton({ startUrl }: { startUrl: string }) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const onClick = async () => {
     setIsLoading(true);
+
     try {
-      await launchCampaign({ startUrl: "https://chessdojo.club" });
+      await startCampaign(startUrl);
       router.refresh();
     } finally {
       setIsLoading(false);
@@ -29,5 +30,13 @@ export function LaunchCampaignButton() {
     );
   }
 
-  return <Button onClick={onClick}>Launch Campaign</Button>;
+  return (
+    <Button
+      onClick={onClick}
+      type="submit"
+      className="bg-amber-500 hover:bg-amber-600"
+    >
+      Launch <ArrowRight className="ml-2 h-4 w-4" />
+    </Button>
+  );
 }

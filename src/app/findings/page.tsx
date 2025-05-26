@@ -1,79 +1,84 @@
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
-import { db } from "~/server/db";
-import { findingsTable } from "~/server/db/schema";
-import { Plus } from "lucide-react";
+import { Card, CardContent } from "~/components/ui/card";
+import { FileText } from "lucide-react";
 import Link from "next/link";
+import { getAllFindings } from "~/server/actions";
 
 export default async function FindingsPage() {
-  const findings = await db.select().from(findingsTable);
+  const findings = await getAllFindings();
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Findings</h1>
-        <Link href="/findings/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Finding
-          </Button>
-        </Link>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-amber-700">Findings</h1>
+        <p className="text-muted-foreground mt-2">
+          Issues discovered by your raccoon buddies during testing
+        </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All Findings</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {findings.length === 0 ? (
-            <p className="text-muted-foreground py-4 text-center">
-              No findings found. Create one to get started.
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Slug</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+      <Card className="border-amber-200">
+        <CardContent className="p-4">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b border-amber-200 bg-amber-50">
+                  <th className="p-3 text-left font-medium text-amber-800">
+                    Name
+                  </th>
+                  <th className="p-3 text-left font-medium text-amber-800">
+                    Description
+                  </th>
+                  <th className="p-3 text-right font-medium text-amber-800">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-amber-100">
                 {findings.map((finding) => (
-                  <TableRow key={finding.id}>
-                    <TableCell>{finding.id}</TableCell>
-                    <TableCell>{finding.slug}</TableCell>
-                    <TableCell className="max-w-[300px] truncate">
+                  <tr key={finding.id} className="hover:bg-amber-50/50">
+                    <td className="p-3">
+                      <Link
+                        href={`/findings/${finding.slug}`}
+                        className="font-medium text-amber-700 hover:underline"
+                      >
+                        {finding.name}
+                      </Link>
+                    </td>
+                    <td className="text-muted-foreground p-3">
                       {finding.description}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Link href={`/findings/${finding.id}`}>
-                          <Button variant="outline" size="sm">
-                            View
-                          </Button>
-                        </Link>
-                        <Link href={`/findings/${finding.id}/edit`}>
-                          <Button variant="outline" size="sm">
-                            Edit
-                          </Button>
-                        </Link>
+                    </td>
+                    <td className="p-3 text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-amber-200 text-amber-700"
+                          asChild
+                        >
+                          <Link href={finding.moreInfoURL} target="_blank">
+                            <FileText className="mr-1 h-3 w-3" />
+                            More Info
+                          </Link>
+                        </Button>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 ))}
-              </TableBody>
-            </Table>
+              </tbody>
+            </table>
+          </div>
+
+          {findings.length === 0 && (
+            <div className="p-8 text-center">
+              <p className="font-medium text-amber-800">
+                No findings available.
+              </p>
+            </div>
           )}
+
+          <div className="text-muted-foreground mt-4 text-sm">
+            Showing {findings.length} findings
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -1,98 +1,65 @@
+import { Play } from "lucide-react";
+import { LaunchCampaignButton } from "~/components/launch-campaign";
+import { CampaignsTable } from "./campaigns-table";
+import { Card, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
-import { Badge } from "~/components/ui/badge";
-import { db } from "~/server/db";
-import { campaignsTable } from "~/server/db/schema";
-import { Plus } from "lucide-react";
-import Link from "next/link";
+import { getAllCampaigns } from "~/server/actions";
 
 export default async function CampaignsPage() {
-  const campaigns = await db.select().from(campaignsTable);
+  const campaigns = await getAllCampaigns();
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Campaigns</h1>
-        <Link href="/campaigns/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Campaign
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-amber-700">Campaigns</h1>
+          <p className="text-muted-foreground mt-2">
+            View and manage your testing campaigns
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button className="bg-amber-500 hover:bg-amber-600">
+            <Play className="mr-2 h-4 w-4" />
+            Re-run All Campaigns
           </Button>
-        </Link>
+          <LaunchCampaignButton startUrl="http://localhost:3000/" />
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All Campaigns</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {campaigns.length === 0 ? (
-            <p className="text-muted-foreground py-4 text-center">
-              No campaigns found. Create one to get started.
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Start URL</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Depth</TableHead>
-                  <TableHead>Created At</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {campaigns.map((campaign) => (
-                  <TableRow key={campaign.id}>
-                    <TableCell>{campaign.id}</TableCell>
-                    <TableCell className="max-w-[200px] truncate">
-                      {campaign.startUrl}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          campaign.status === "started"
-                            ? "default"
-                            : campaign.status === "stopped"
-                              ? "secondary"
-                              : "outline"
-                        }
-                      >
-                        {campaign.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{campaign.depth}</TableCell>
-                    <TableCell>
-                      {new Date(campaign.createdAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Link href={`/campaigns/${campaign.id}`}>
-                          <Button variant="outline" size="sm">
-                            View
-                          </Button>
-                        </Link>
-                        <Link href={`/campaigns/${campaign.id}/edit`}>
-                          <Button variant="outline" size="sm">
-                            Edit
-                          </Button>
-                        </Link>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+      <Card className="border-amber-200">
+        <CardContent className="p-4">
+          <div className="overflow-x-auto">
+            <CampaignsTable campaigns={campaigns} />
+          </div>
+
+          {campaigns.length === 0 && (
+            <div className="p-8 text-center">
+              <p className="text-amber-800">
+                No campaigns match your search criteria.
+              </p>
+            </div>
           )}
+
+          <div className="text-muted-foreground mt-4 flex items-center justify-between text-sm">
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-amber-200"
+                disabled
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-amber-200"
+                disabled
+              >
+                Next
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

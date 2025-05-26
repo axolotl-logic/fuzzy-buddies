@@ -1,92 +1,51 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import { db } from "~/server/db";
-import { campaignsTable } from "~/server/db/schema";
-import { eq } from "drizzle-orm";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { Play, Clock } from "lucide-react";
 import { notFound } from "next/navigation";
+import { CampaignCard } from "../campaign-card";
+import { formatDateTime } from "~/lib/utils";
+import { getCampaign, getCampaignActions } from "~/server/actions";
 
-export default async function CampaignDetailPage({
+export default async function CampaignPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const id = Number.parseInt(params.id);
-
-  if (isNaN(id)) {
-    return notFound();
-  }
-
-  const campaign = await db.query.campaignsTable.findFirst({
-    where: eq(campaignsTable.id, id),
-  });
+  const { id } = await params;
+  const campaign = await getCampaign(Number(id));
 
   if (!campaign) {
     return notFound();
   }
 
-  return (
-    <div className="container mx-auto py-10">
-      <Link
-        href="/campaigns"
-        className="text-muted-foreground hover:text-foreground mb-6 flex items-center text-sm transition-colors"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Campaigns
-      </Link>
+  const actions = await getCampaignActions(Number(id));
 
-      <Card className="mx-auto max-w-2xl">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl">Campaign #{campaign.id}</CardTitle>
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-amber-700">
+            Campaign started at {formatDateTime(campaign.startedAt)}
+          </h1>
+          <div className="mt-2 flex items-center gap-2">
             <Badge
-              variant={
-                campaign.status === "started"
-                  ? "default"
-                  : campaign.status === "stopped"
-                    ? "secondary"
-                    : "outline"
-              }
+              variant="outline"
+              className="border-green-200 bg-green-50 text-green-700"
             >
               {campaign.status}
             </Badge>
+            <div className="text-muted-foreground flex items-center text-sm">
+              <Clock className="mr-1 h-4 w-4" />
+              {formatDateTime(campaign.startedAt)}
+            </div>
           </div>
-          <CardDescription>Campaign Details</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <h3 className="font-medium">ID</h3>
-            <p className="text-muted-foreground">{campaign.id}</p>
-          </div>
-          <div>
-            <h3 className="font-medium">Start URL</h3>
-            <p className="text-muted-foreground break-all">
-              {campaign.startUrl}
-            </p>
-          </div>
-          <div>
-            <h3 className="font-medium">Status</h3>
-            <p className="text-muted-foreground">{campaign.status}</p>
-          </div>
-          <div>
-            <h3 className="font-medium">Depth</h3>
-            <p className="text-muted-foreground">{campaign.depth}</p>
-          </div>
-          <div>
-            <h3 className="font-medium">Created At</h3>
-            <p className="text-muted-foreground">
-              {new Date(campaign.createdAt).toLocaleString()}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+        <Button className="bg-amber-500 hover:bg-amber-600">
+          <Play className="mr-2 h-4 w-4" />
+          Rerun Campaign
+        </Button>
+      </div>
+      <CampaignCard campaign={campaign} actions={actions} />
     </div>
   );
 }

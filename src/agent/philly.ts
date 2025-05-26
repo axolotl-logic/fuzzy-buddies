@@ -1,8 +1,7 @@
-import type { Page } from "puppeteer";
 import { choose, getAccessibility } from "./utils";
-import type { ActionFunc } from "./types";
-import { db } from "~/server/db";
-import { upsertBuddy } from "./fuzz";
+import type { ActionFunc, Buddy } from "~/types";
+import { type DBHandle } from "~/server/db";
+import { upsertBuddy } from "~/server/db/buddies";
 
 const INPUTS = [
   "http://example.com/",
@@ -11,17 +10,19 @@ const INPUTS = [
   "foo@example.com",
 ] as const;
 
-export default async function philly(): Promise<[number, ActionFunc]> {
-  const buddyRow = await upsertBuddy(db, {
+export default async function philly(
+  db: DBHandle,
+): Promise<[Buddy, ActionFunc]> {
+  const buddy = await upsertBuddy(db, {
     name: "Phillip",
     slug: "philly",
     description:
-      "I fell out forms the best I can, but I'm quite distractable. Make sure to follow best accessibility practices so that I and human users can use them. We'll help!",
+      "I fill out forms the best I can, but I'm quite distractable. Make sure to follow best accessibility practices so that I and human users can use them. We'll help!",
   });
 
   return [
-    buddyRow.id,
-    async (page: Page) => {
+    buddy,
+    async ({ click, keyboardType, page }) => {
       const els = await getAccessibility(page);
 
       const emptyInput = choose(
@@ -36,31 +37,22 @@ export default async function philly(): Promise<[number, ActionFunc]> {
       let continuation = choose(els.filter((node) => node.role === "button"));
       continuation ??= choose(els.filter((node) => node.role === "link"));
 
-      if (emptyInput !== undefined) {
+      if (emptyInput?.name !== undefined) {
+        const { name, role } = emptyInput;
         const el = await emptyInput.elementHandle();
         if (el === null) {
-          return null;
+          console.error("FIXME: elementHandle is null");
+          return;
         }
 
+        await click({ name, role });
         const value = choose([...INPUTS]) ?? INPUTS[0];
-
-        return {
-          kind: "click-then-type",
-          role: emptyInput.role,
-          name: emptyInput.name ?? "<missing name>",
-          value,
-        };
+        await keyboardType(value);
       }
 
-      if (continuation !== undefined) {
-        return {
-          kind: "click",
-          role: continuation.role,
-          name: continuation.name ?? "<missing name>",
-        };
+      if (continuation?.name !== undefined) {
+        await click({ name: continuation.name, role: continuation.role });
       }
-
-      return null;
     },
   ];
 }

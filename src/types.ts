@@ -1,4 +1,5 @@
 import type { Page, ConsoleMessageType } from "puppeteer";
+import type * as schema from "~/server/db/schema";
 
 export interface Observation {
   multiselectable?: boolean;
@@ -69,17 +70,39 @@ export interface ConsoleEvent {
   text: string;
 }
 
-export type Action =
+export type BrowserAction =
   | {
       name: string;
       role: string;
       kind: "click";
     }
   | {
-      name: string;
-      role: string;
-      kind: "click-then-type";
+      kind: "keyboard-type";
       value: string;
+      name: undefined;
+      role: undefined;
     };
 
-export type ActionFunc = (page: Page) => Promise<Action | null>;
+export type ActionFunc = (args: {
+  click: (el: { name: string; role: string }) => Promise<void>;
+  keyboardType: (value: string) => Promise<void>;
+  page: Page;
+}) => Promise<void>;
+
+export type Campaign = typeof schema.campaignsTable.$inferSelect;
+export type NewCampaign = typeof schema.campaignsTable.$inferInsert;
+
+export type Action = typeof schema.actionsTable.$inferSelect;
+export type NewAction = typeof schema.actionsTable.$inferInsert;
+
+export type Finding = typeof schema.findingsTable.$inferSelect;
+export type NewFinding = typeof schema.findingsTable.$inferInsert;
+
+export type ActionFinding = typeof schema.actionsFindingsTable.$inferSelect;
+export type NewActionFinding = typeof schema.actionsFindingsTable.$inferInsert;
+
+export type Buddy = typeof schema.buddiesTable.$inferSelect;
+export type NewBuddy = typeof schema.buddiesTable.$inferInsert;
+
+export type Hint = typeof schema.hintsTable.$inferSelect;
+export type NewHint = typeof schema.hintsTable.$inferInsert;

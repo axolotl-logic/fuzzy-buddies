@@ -1,13 +1,14 @@
 // Click on elements within the accessibility tree
 
-import { type Page } from "puppeteer";
 import { choose, getAccessibility, isWidgetRole } from "./utils";
-import type { ActionFunc } from "./types";
-import { db } from "~/server/db";
-import { upsertBuddy } from "./fuzz";
+import type { ActionFunc, Buddy } from "~/types";
+import type { DBHandle } from "~/server/db";
+import { upsertBuddy } from "~/server/db/buddies";
 
-export default async function clicky(): Promise<[number, ActionFunc]> {
-  const buddyRow = await upsertBuddy(db, {
+export default async function clicky(
+  db: DBHandle,
+): Promise<[Buddy, ActionFunc]> {
+  const buddy = await upsertBuddy(db, {
     name: "Clicky",
     slug: "clicky",
     description:
@@ -15,26 +16,22 @@ export default async function clicky(): Promise<[number, ActionFunc]> {
   });
 
   return [
-    buddyRow.id,
-    async (page: Page) => {
+    buddy,
+    async ({ click, page }) => {
       const els = await getAccessibility(page);
-      const el = choose(
-        els.filter(
-          (el) => isWidgetRole(el.role) && el.name
-        ),
-      );
+      const el = choose(els.filter((el) => isWidgetRole(el.role) && el.name));
       if (!el) {
-        console.warn("FIXME: Widget deadend")
-        return null;
+        console.warn("FIXME: Widget deadend");
+        return;
       }
 
-      const { name, role } = el;
+      const { role, name } = el;
       if (!name) {
         console.error("FIXME: name undefined, despite prior checking");
-        return null;
+        return;
       }
 
-      return { kind: "click", role, name };
+      await click({ role, name });
     },
   ];
 }

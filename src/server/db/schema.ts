@@ -38,6 +38,11 @@ export const campaignsTable = createTable("campaigns", (d) => ({
   id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
   startUrl: d.text().notNull(),
   status: d.varchar({ length: 10, enum: ["started", "stopped", "drift"] }),
+  startedAt: d
+    .timestamp({ withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  endedAt: d.timestamp({ withTimezone: true }),
   depth: d.integer().notNull(),
   createdAt: d
     .timestamp({ withTimezone: true })
@@ -48,8 +53,8 @@ export const campaignsTable = createTable("campaigns", (d) => ({
 export const actionsTable = createTable("actions", (d) => ({
   id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
   campaignId: d.integer().references(() => campaignsTable.id),
-  targetRole: d.varchar({ length: 64 }).notNull(),
-  targetName: d.text().notNull(),
+  targetRole: d.varchar({ length: 64 }),
+  targetName: d.text(),
   value: d.text(),
   screenshotAfter: d.text(),
   before: d.json().notNull(),
@@ -57,7 +62,7 @@ export const actionsTable = createTable("actions", (d) => ({
   removed: d.json().notNull(),
   after: d.json().notNull(),
   url: d.text().notNull(),
-  kind: d.varchar({ length: 16, enum: ["click", "click-then-type"] }),
+  kind: d.varchar({ length: 16, enum: ["click", "keyboard-type"] }),
   buddyId: d
     .integer()
     .references(() => buddiesTable.id)
@@ -70,31 +75,23 @@ export const actionsTable = createTable("actions", (d) => ({
 
 export const findingsTable = createTable("findings", (d) => ({
   id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
-  slug: d.varchar({ length: 120 }).unique(),
-  description: d.text(),
-  moreInfoURL: d.text(),
+  slug: d.varchar({ length: 120 }).unique().notNull(),
+  description: d.text().notNull(),
+  moreInfoURL: d.text().notNull(),
+  name: d.text().notNull(),
 }));
 
 export const actionsFindingsTable = createTable("actions_findings", (d) => ({
-  campaignId: d.integer().references(() => campaignsTable.id),
-  actionId: d.integer().references(() => actionsTable.id),
-  findingId: d.integer().references(() => findingsTable.id),
+  campaignId: d
+    .integer()
+    .references(() => campaignsTable.id)
+    .notNull(),
+  actionId: d
+    .integer()
+    .references(() => actionsTable.id)
+    .notNull(),
+  findingId: d
+    .integer()
+    .references(() => findingsTable.id)
+    .notNull(),
 }));
-
-export type Buddy = typeof buddiesTable.$inferSelect;
-export type NewBuddy = typeof buddiesTable.$inferInsert;
-
-export type Hint = typeof hintsTable.$inferSelect;
-export type NewHint = typeof hintsTable.$inferInsert;
-
-export type Campaign = typeof campaignsTable.$inferSelect;
-export type NewCampaign = typeof campaignsTable.$inferInsert;
-
-export type Action = typeof actionsTable.$inferSelect;
-export type NewAction = typeof actionsTable.$inferInsert;
-
-export type Finding = typeof findingsTable.$inferSelect;
-export type NewFinding = typeof findingsTable.$inferInsert;
-
-export type ActionFinding = typeof actionsFindingsTable.$inferSelect;
-export type NewActionFinding = typeof actionsFindingsTable.$inferInsert;
