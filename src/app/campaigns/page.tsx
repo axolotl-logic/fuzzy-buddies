@@ -1,9 +1,9 @@
 import { Play } from "lucide-react";
-import { LaunchCampaignButton } from "~/components/launch-campaign";
+import { LaunchCampaignButton } from "@/components/launch-campaign";
 import { CampaignsTable } from "./campaigns-table";
-import { Card, CardContent } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
-import { getAllCampaigns } from "~/server/actions";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { getAllCampaigns } from "@/server/actions";
 
 export default async function CampaignsPage() {
   const campaigns = await getAllCampaigns();

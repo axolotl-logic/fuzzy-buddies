@@ -1,9 +1,8 @@
-// Click on elements within the accessibility tree
-
-import { choose, getAccessibility, isWidgetRole } from "./utils";
-import type { ActionFunc, Buddy } from "~/types";
-import type { DBHandle } from "~/server/db";
-import { upsertBuddy } from "~/server/db/buddies";
+import { choose, isWidgetRole } from "./utils";
+import type { ActionFunc, Buddy } from "@/types";
+import type { DBHandle } from "@/server/db";
+import { upsertBuddy } from "@/server/db/buddies";
+import { fixme } from "./config";
 
 export default async function clicky(
   db: DBHandle,
@@ -17,17 +16,16 @@ export default async function clicky(
 
   return [
     buddy,
-    async ({ click, page }) => {
-      const els = await getAccessibility(page);
+    async ({ click, observations: els }) => {
       const el = choose(els.filter((el) => isWidgetRole(el.role) && el.name));
       if (!el) {
-        console.warn("FIXME: Widget deadend");
+        fixme("Widget deadend");
         return;
       }
 
       const { role, name } = el;
-      if (!name) {
-        console.error("FIXME: name undefined, despite prior checking");
+      if (!name || !role) {
+        fixme("name or role undefined, despite prior checking");
         return;
       }
 

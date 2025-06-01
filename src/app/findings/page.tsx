@@ -1,8 +1,8 @@
-import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { FileText } from "lucide-react";
 import Link from "next/link";
-import { getAllFindings } from "~/server/actions";
+import { getAllFindings } from "@/server/actions";
 
 export default async function FindingsPage() {
   const findings = await getAllFindings();

@@ -5,13 +5,18 @@ import { AxePuppeteer } from "@axe-core/puppeteer";
 import clicky from "./clicky";
 import philly from "./philly";
 import { addListeners } from "./listeners";
-import { db, type DBHandle } from "~/server/db";
+import { db, type DBHandle } from "@/server/db";
 import { getAccessibility } from "./utils";
 import { diffObservations, toObservation } from "./observations";
-import type { ActionFunc, BrowserAction, Buddy } from "~/types";
-import { createCampaign, finalizeCampaign } from "~/server/db/campaigns";
-import { createAction } from "~/server/db/actions";
-import { createActionFinding, upsertAxeResults } from "~/server/db/findings";
+import type { ActionFunc, BrowserAction, Buddy } from "@/types";
+import {
+  createCampaign,
+  finalizeCampaign,
+  getCampaignById,
+} from "@/server/db/campaigns";
+import { createAction } from "@/server/db/actions";
+import { createActionFinding, upsertAxeResults } from "@/server/db/findings";
+import { fixme } from "./config";
 
 /**
  * Launches a campaign to test a website for accessibility issues
@@ -21,13 +26,16 @@ export async function launchCampaign(
   {
     startUrl,
     buddySlug,
+    depth,
   }: {
     startUrl: string;
+    depth?: number;
     buddySlug: "clicky" | "philly";
   },
 ) {
+  depth ??= 5;
+
   const browser = await puppeteer.launch();
-  const depth = 5;
   const buddies = await setupBuddies(db);
   const buddy = buddies.find((b) => b.buddy.slug === buddySlug);
   if (!buddy) {
@@ -41,12 +49,19 @@ export async function launchCampaign(
     const interactors = newInteractors(page, campaign.id, buddy.buddy.id);
 
     for (let step = 0; step < depth; step++) {
-      await buddy.act({ page, ...interactors });
+      const observations = await getAccessibility(page);
+      if (observations.length === 0) {
+        fixme("handle empty observations list");
+        break;
+      }
+      await buddy.act({ observations, ...interactors });
     }
   } finally {
     await finalizeCampaign(db, campaign.id);
     await browser.close();
   }
+
+  return getCampaignById(db, campaign.id);
 }
 
 async function wait(page: Page) {
@@ -54,14 +69,14 @@ async function wait(page: Page) {
   // We assume that in that 300ms, any asynchronous requests will have
   // started.
   await page.waitForNetworkIdle({ timeout: 5000, idleTime: 1000 }).catch(() => {
-    console.warn("FIXME: handle network never idle");
+    fixme("handle network never idle");
   });
 
   // Wait for readyState to reach complete
   await page
     .waitForFunction(() => document.readyState === "complete")
     .catch(() => {
-      console.warn("FIXME: handle document.readyState not reaching 'complete'");
+      fixme("handle document.readyState not reaching 'complete'");
     });
 
   // Wait for all elements to stabalize.
@@ -70,9 +85,7 @@ async function wait(page: Page) {
     .setWaitForStableBoundingBox(true)
     .waitHandle()
     .catch(() => {
-      console.warn(
-        "FIXME: handle an element not reachinga stable bounding box",
-      );
+      fixme("handle an element not reaching a stable bounding box");
     });
 }
 
@@ -110,7 +123,7 @@ function newInteractors(page: Page, campaignId: number, buddyId: number) {
   const record = async (f: () => Promise<BrowserAction>) => {
     const before = (await getAccessibility(page)).map(toObservation);
     if (before.length === 0) {
-      console.error("FIXME: handle empty observations list");
+      fixme("handle empty observations list");
       return;
     }
 

@@ -1,7 +1,7 @@
-import { Card } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { getAllHints } from "~/server/actions";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { getAllHints } from "@/server/actions";
 import { HintSearch } from "./hint-search";
 
 export default async function HintsPage() {

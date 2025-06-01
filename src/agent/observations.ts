@@ -1,5 +1,5 @@
 import type { SerializedAXNode } from "puppeteer";
-import type { Observation } from "~/types";
+import type { Observation } from "@/types";
 
 export function toObservation(node: SerializedAXNode): Observation {
   return {

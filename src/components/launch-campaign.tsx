@@ -4,7 +4,7 @@ import { ArrowRight, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
-import { startCampaign } from "~/server/actions";
+import { startCampaign } from "@/server/actions";
 
 export function LaunchCampaignButton({ startUrl }: { startUrl: string }) {
   const [isLoading, setIsLoading] = useState(false);

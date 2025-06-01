@@ -1,7 +1,8 @@
-import { choose, getAccessibility } from "./utils";
-import type { ActionFunc, Buddy } from "~/types";
-import { type DBHandle } from "~/server/db";
-import { upsertBuddy } from "~/server/db/buddies";
+import { choose } from "./utils";
+import type { ActionFunc, Buddy } from "@/types";
+import type { DBHandle } from "@/server/db";
+import { upsertBuddy } from "@/server/db/buddies";
+import { fixme } from "./config";
 
 const INPUTS = [
   "http://example.com/",
@@ -22,13 +23,11 @@ export default async function philly(
 
   return [
     buddy,
-    async ({ click, keyboardType, page }) => {
-      const els = await getAccessibility(page);
-
+    async ({ click, keyboardType, observations: els }) => {
       const emptyInput = choose(
         els.filter(
           (node) =>
-            ["input", "textbox"].includes(node.role) &&
+            ["input", "textbox"].includes(node.role ?? "") &&
             node.name !== undefined &&
             (node.value === undefined || node.value === ""),
         ),
@@ -38,21 +37,23 @@ export default async function philly(
       continuation ??= choose(els.filter((node) => node.role === "link"));
 
       if (emptyInput?.name !== undefined) {
-        const { name, role } = emptyInput;
-        const el = await emptyInput.elementHandle();
-        if (el === null) {
-          console.error("FIXME: elementHandle is null");
+        const { role, name } = emptyInput;
+        if (!name || !role) {
+          fixme("emptyInput's name or role undefined, despite prior checking");
           return;
         }
-
-        await click({ name, role });
-        const value = choose([...INPUTS]) ?? INPUTS[0];
-        await keyboardType(value);
+        await click({ role, name });
+        await keyboardType(choose([...INPUTS]) ?? "[missing input]");
+      } else if (continuation?.name !== undefined) {
+        const { role, name } = continuation;
+        if (!name || !role) {
+          fixme("name or role undefined, despite prior checking");
+          return;
+        }
+        await click({ role, name });
       }
 
-      if (continuation?.name !== undefined) {
-        await click({ name: continuation.name, role: continuation.role });
-      }
+      fixme("Philly deadend, no input or continuation found");
     },
   ];
 }

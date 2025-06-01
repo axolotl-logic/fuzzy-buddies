@@ -4,21 +4,21 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LinkIcon } from "lucide-react";
 import Link from "next/link";
-import { Button } from "~/components/ui/button";
-import { db } from "~/server/db";
+import { Button } from "@/components/ui/button";
+import { db } from "@/server/db";
 import {
   actionsFindingsTable,
   actionsTable,
   campaignsTable,
-} from "~/server/db/schema";
+} from "@/server/db/schema";
 import { and, eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
-import { formatDateTime } from "~/lib/utils";
+import { formatDateTime } from "@/lib/utils";
 
 export default async function FindingPage({
   params,

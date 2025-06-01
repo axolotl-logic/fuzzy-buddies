@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import type { DBHandle } from "./index";
 import { actionsTable } from "./schema";
-import type { Action, NewAction } from "~/types";
+import type { Action, NewAction } from "@/types";
 
 export async function createAction(
   db: DBHandle,
@@ -25,3 +25,5 @@ export async function getActionsByCampaign(
     .from(actionsTable)
     .where(eq(actionsTable.campaignId, campaignId));
 }
+
+export const getActionsByCampaignId = getActionsByCampaign;

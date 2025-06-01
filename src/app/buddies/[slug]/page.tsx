@@ -1,9 +1,9 @@
-import { Card, CardContent } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Heart } from "lucide-react";
 import Image from "next/image";
-import { getBuddy } from "~/server/actions";
+import { getBuddy } from "@/server/actions";
 
 export default async function BuddyPage({
   params,

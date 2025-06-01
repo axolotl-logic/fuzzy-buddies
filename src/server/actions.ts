@@ -6,7 +6,7 @@ import { getCampaignById, listCampaigns } from "./db/campaigns";
 import { getActionsByCampaign } from "./db/actions";
 import { listHints } from "./db/hints";
 import { findingsTable } from "./db/schema";
-import { launchCampaign } from "~/agent/fuzz";
+import { launchCampaign } from "@/agent/fuzz";
 
 export async function getBuddy(slug: string) {
   return await getBuddyBySlug(db, slug);

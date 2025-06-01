@@ -1,9 +1,9 @@
 import { Calendar, Clock, Play } from "lucide-react";
 import Link from "next/link";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { formatDateTime } from "~/lib/utils";
-import type { Campaign } from "~/types";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { formatDateTime } from "@/lib/utils";
+import type { Campaign } from "@/types";
 
 interface CampaignsTableProps {
   campaigns: Campaign[];

@@ -7,12 +7,12 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "~/components/ui/card";
+} from "@/components/ui/card";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { type Campaign, type Action } from "~/types";
+import { type Campaign, type Action } from "@/types";
 import { z } from "zod";
-import { formatDateTime } from "~/lib/utils";
-import { isWidgetRole } from "~/agent/utils";
+import { formatDateTime } from "@/lib/utils";
+import { isWidgetRole } from "@/agent/utils";
 
 interface CampaignCardProps {
   campaign: Campaign;

@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "~/components/ui/button";
-import { ScrollArea } from "~/components/ui/scroll-area";
-import { cn } from "~/lib/utils";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 import { MousePointer, FileText, Lightbulb, Heart } from "lucide-react";
 import { usePathname } from "next/navigation";
 

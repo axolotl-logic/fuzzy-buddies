@@ -4,9 +4,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "~/components/ui/card";
+} from "@/components/ui/card";
 import Image from "next/image";
-import { CampaignForm } from "~/components/campaign-form";
+import { CampaignForm } from "@/components/campaign-form";
 
 export default function Home() {
   return (

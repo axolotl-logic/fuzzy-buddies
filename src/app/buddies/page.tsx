@@ -1,10 +1,10 @@
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardFooter, CardTitle } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Heart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { getAllBuddies } from "~/server/actions";
+import { getAllBuddies } from "@/server/actions";
 
 export default async function BuddiesPage() {
   const buddies = await getAllBuddies();

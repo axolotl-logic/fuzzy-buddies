@@ -1,5 +1,5 @@
-import type { Page, ConsoleMessageType } from "puppeteer";
-import type * as schema from "~/server/db/schema";
+import type { ConsoleMessageType } from "puppeteer";
+import type * as schema from "@/server/db/schema";
 
 export interface Observation {
   multiselectable?: boolean;
@@ -86,7 +86,7 @@ export type BrowserAction =
 export type ActionFunc = (args: {
   click: (el: { name: string; role: string }) => Promise<void>;
   keyboardType: (value: string) => Promise<void>;
-  page: Page;
+  observations: Observation[];
 }) => Promise<void>;
 
 export type Campaign = typeof schema.campaignsTable.$inferSelect;

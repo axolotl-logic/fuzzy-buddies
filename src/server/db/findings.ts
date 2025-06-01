@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import type { DBHandle } from "./index";
 import { actionsFindingsTable, findingsTable } from "./schema";
-import type { Finding, NewFinding } from "~/types";
+import type { Finding, NewFinding } from "@/types";
 import type { AxeResults } from "axe-core";
 
 export async function upsertFinding(

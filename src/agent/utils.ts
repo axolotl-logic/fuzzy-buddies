@@ -1,7 +1,7 @@
 import type { Page, SerializedAXNode } from "puppeteer";
 
-export function isWidgetRole(role: string) {
-  return ["link", "button", "input", "radio", "checkbox"].includes(role);
+export function isWidgetRole(role?: string) {
+  return ["link", "button", "input", "radio", "checkbox"].includes(role ?? "");
 }
 
 export async function getAccessibility(page: Page) {

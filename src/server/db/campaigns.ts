@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { type DBHandle } from "./index";
 import { campaignsTable } from "./schema";
-import type { Campaign } from "~/types";
+import type { Campaign } from "@/types";
 
 export async function createCampaign(
   db: DBHandle,
@@ -41,6 +41,16 @@ export async function getCampaignById(
 
 export async function listCampaigns(db: DBHandle): Promise<Campaign[]> {
   return await db.query.campaignsTable.findMany({
+    orderBy: (campaigns, { desc }) => [desc(campaigns.startedAt)],
+  });
+}
+
+export async function getCampaignsByUrl(
+  db: DBHandle,
+  startUrl: string,
+): Promise<Campaign[]> {
+  return await db.query.campaignsTable.findMany({
+    where: (campaigns, { eq }) => eq(campaigns.startUrl, startUrl),
     orderBy: (campaigns, { desc }) => [desc(campaigns.startedAt)],
   });
 }

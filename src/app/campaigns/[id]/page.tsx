@@ -1,10 +1,10 @@
-import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Play, Clock } from "lucide-react";
 import { notFound } from "next/navigation";
 import { CampaignCard } from "../campaign-card";
-import { formatDateTime } from "~/lib/utils";
-import { getCampaign, getCampaignActions } from "~/server/actions";
+import { formatDateTime } from "@/lib/utils";
+import { getCampaign, getCampaignActions } from "@/server/actions";
 
 export default async function CampaignPage({
   params,

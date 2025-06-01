@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import type { DBHandle } from "./index";
 import { buddiesTable } from "./schema";
-import type { Buddy, NewBuddy } from "~/types";
+import type { Buddy, NewBuddy } from "@/types";
 
 export async function upsertBuddy(
   db: DBHandle,
