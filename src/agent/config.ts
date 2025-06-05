@@ -12,10 +12,11 @@ const ConfigSchema = z.object({
 
 export const config = ConfigSchema.parse(process.env);
 
-export function fixme(message: string): void {
+export function fixme(message: string, err?: unknown): void {
+  const msg = `FIXME: ${message} ${err ? `Error: ${JSON.stringify(err)}` : ""}`;
   if (config.STRICT_MODE) {
-    throw new Error(`FIXME: ${message}`);
+    throw new Error(msg);
   } else {
-    console.warn(`FIXME: ${message}`);
+    console.warn(msg);
   }
 }

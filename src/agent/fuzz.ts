@@ -15,7 +15,11 @@ import {
   getCampaignById,
 } from "@/server/db/campaigns";
 import { createAction } from "@/server/db/actions";
-import { createActionFinding, upsertAxeResults } from "@/server/db/findings";
+import {
+  createActionFinding,
+  upsertAxeResults,
+  upsertFinding,
+} from "@/server/db/findings";
 import { fixme } from "./config";
 
 /**
@@ -46,6 +50,30 @@ export async function launchCampaign(
 
   try {
     const page = await setupPage(browser, startUrl);
+    await page.setRequestInterception(true);
+    page.on("request", (request) => {
+      if (request.resourceType() === "image") {
+        request
+          .abort()
+          .catch((err) => fixme("Failed to abort image request", err));
+      } else if (request.resourceType() === "stylesheet") {
+        request
+          .abort()
+          .catch((err) => fixme("Failed to abort stylesheet request", err));
+      } else if (request.resourceType() === "font") {
+        request
+          .abort()
+          .catch((err) => fixme("Failed to abort font request", err));
+      } else if (request.resourceType() === "media") {
+        request
+          .abort()
+          .catch((err) => fixme("Failed to abort media request", err));
+      } else {
+        request
+          .continue()
+          .catch((err) => fixme("Failed to continue request", err));
+      }
+    });
     const interactors = newInteractors(page, campaign.id, buddy.buddy.id);
 
     for (let step = 0; step < depth; step++) {
@@ -65,27 +93,44 @@ export async function launchCampaign(
 }
 
 async function wait(page: Page) {
-  // Wait for network to become idle for at least 300ms.
-  // We assume that in that 300ms, any asynchronous requests will have
-  // started.
-  await page.waitForNetworkIdle({ timeout: 5000, idleTime: 1000 }).catch(() => {
-    fixme("handle network never idle");
-  });
+  await page
+    .waitForNetworkIdle({ timeout: 2 * 1000, idleTime: 300 })
+    .catch(async () => {
+      await upsertFinding(db, {
+        slug: "wait-for-network-idle",
+        description: "Network idle timeout reached",
+        name: "Network Idle Timeout",
+        moreInfoURL: "/findings/wait-for-network-idle",
+      });
+    });
 
   // Wait for readyState to reach complete
   await page
-    .waitForFunction(() => document.readyState === "complete")
-    .catch(() => {
-      fixme("handle document.readyState not reaching 'complete'");
+    .waitForFunction(() => document.readyState === "complete", {
+      timeout: 1000,
+    })
+    .catch(async () => {
+      await upsertFinding(db, {
+        slug: "document-ready-state",
+        description: "Document readyState did not reach complete",
+        name: "Document Ready State",
+        moreInfoURL: "/findings/document-ready-state",
+      });
     });
 
   // Wait for all elements to stabalize.
   await page
     .locator("*")
+    .setTimeout(1000)
     .setWaitForStableBoundingBox(true)
     .waitHandle()
-    .catch(() => {
-      fixme("handle an element not reaching a stable bounding box");
+    .catch(async () => {
+      await upsertFinding(db, {
+        slug: "wait-for-stable-bounding-box",
+        description: "Elements did not stabilize within the timeout",
+        name: "Stable Bounding Box Timeout",
+        moreInfoURL: "/findings/wait-for-stable-bounding-box",
+      });
     });
 }
 
@@ -113,15 +158,20 @@ async function setupPage(browser: Browser, startUrl: string): Promise<Page> {
 
   addListeners(page);
 
-  await page.goto(startUrl, { timeout: 5000 });
-  await wait(page);
+  await page.goto(startUrl);
 
   return page;
 }
 
+async function getObservations(page: Page) {
+  await wait(page);
+  const els = await getAccessibility(page);
+  return els.map(toObservation);
+}
+
 function newInteractors(page: Page, campaignId: number, buddyId: number) {
   const record = async (f: () => Promise<BrowserAction>) => {
-    const before = (await getAccessibility(page)).map(toObservation);
+    const before = await getObservations(page);
     if (before.length === 0) {
       fixme("handle empty observations list");
       return;
@@ -129,7 +179,7 @@ function newInteractors(page: Page, campaignId: number, buddyId: number) {
 
     const action = await f();
 
-    const after = (await getAccessibility(page)).map(toObservation);
+    const after = await getObservations(page);
     const screenshotAfter = await page.screenshot({ encoding: "base64" });
     const [added, removed] = diffObservations(before, after);
 
@@ -152,6 +202,7 @@ function newInteractors(page: Page, campaignId: number, buddyId: number) {
   };
 
   const click = async ({ name, role }: { name: string; role: string }) => {
+    console.log(`Clicking on element with name: ${name}, role: ${role}`);
     return await record(async () => {
       await page
         .locator(`::-p-aria([name="${name}"][role=${role}])`)
@@ -167,6 +218,7 @@ function newInteractors(page: Page, campaignId: number, buddyId: number) {
 
   const keyboardType = async (value: string) => {
     await record(async () => {
+      console.log(`Typing value: ${value}`);
       await page.keyboard.type(value);
       return { value, kind: "keyboard-type", name: undefined, role: undefined };
     });
@@ -186,7 +238,7 @@ async function recordFindings(
     const results = await new AxePuppeteer(page).analyze();
     findings.push(...(await upsertAxeResults(db, results)));
   } catch (e) {
-    console.error("FIXME: Axe analyze failed.", e);
+    fixme("Axe analyze failed", e);
     return;
   }
 

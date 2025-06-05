@@ -3,6 +3,7 @@ import type { ActionFunc, Buddy } from "@/types";
 import type { DBHandle } from "@/server/db";
 import { upsertBuddy } from "@/server/db/buddies";
 import { fixme } from "./config";
+import { upsertFinding } from "@/server/db/findings";
 
 const INPUTS = [
   "http://example.com/",
@@ -53,7 +54,12 @@ export default async function philly(
         await click({ role, name });
       }
 
-      fixme("Philly deadend, no input or continuation found");
+      await upsertFinding(db, {
+        slug: "philly-deadend",
+        description: "Philly reached a deadend with no input or continuation.",
+        name: "Philly Deadend",
+        moreInfoURL: "/findings/philly-deadend",
+      });
     },
   ];
 }

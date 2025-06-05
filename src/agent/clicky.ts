@@ -3,6 +3,7 @@ import type { ActionFunc, Buddy } from "@/types";
 import type { DBHandle } from "@/server/db";
 import { upsertBuddy } from "@/server/db/buddies";
 import { fixme } from "./config";
+import { upsertFinding } from "@/server/db/findings";
 
 export default async function clicky(
   db: DBHandle,
@@ -19,7 +20,13 @@ export default async function clicky(
     async ({ click, observations: els }) => {
       const el = choose(els.filter((el) => isWidgetRole(el.role) && el.name));
       if (!el) {
-        fixme("Widget deadend");
+        await upsertFinding(db, {
+          slug: "clicky-deadend",
+          description: "Clicky reached a deadend with no clickable elements.",
+          name: "Clicky Deadend",
+          moreInfoURL: "/findings/clicky-deadend",
+        });
+
         return;
       }
 
