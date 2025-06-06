@@ -50,30 +50,6 @@ export async function launchCampaign(
 
   try {
     const page = await setupPage(browser, startUrl);
-    await page.setRequestInterception(true);
-    page.on("request", (request) => {
-      if (request.resourceType() === "image") {
-        request
-          .abort()
-          .catch((err) => fixme("Failed to abort image request", err));
-      } else if (request.resourceType() === "stylesheet") {
-        request
-          .abort()
-          .catch((err) => fixme("Failed to abort stylesheet request", err));
-      } else if (request.resourceType() === "font") {
-        request
-          .abort()
-          .catch((err) => fixme("Failed to abort font request", err));
-      } else if (request.resourceType() === "media") {
-        request
-          .abort()
-          .catch((err) => fixme("Failed to abort media request", err));
-      } else {
-        request
-          .continue()
-          .catch((err) => fixme("Failed to continue request", err));
-      }
-    });
     const interactors = newInteractors(page, campaign.id, buddy.buddy.id);
 
     for (let step = 0; step < depth; step++) {

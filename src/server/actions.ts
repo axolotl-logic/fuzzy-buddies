@@ -5,8 +5,9 @@ import { getBuddyBySlug, listBuddies } from "./db/buddies";
 import { getCampaignById, listCampaigns } from "./db/campaigns";
 import { getActionsByCampaign } from "./db/actions";
 import { listHints } from "./db/hints";
-import { findingsTable } from "./db/schema";
+import { actionsTable, findingsTable } from "./db/schema";
 import { launchCampaign } from "@/agent/fuzz";
+import { desc } from "drizzle-orm";
 
 export async function getBuddy(slug: string) {
   return await getBuddyBySlug(db, slug);
@@ -26,6 +27,14 @@ export async function getAllCampaigns() {
 
 export async function getCampaignActions(id: number) {
   return await getActionsByCampaign(db, id);
+}
+
+export async function getRecentActions() {
+  return await db
+    .select()
+    .from(actionsTable)
+    .orderBy(desc(actionsTable.createdAt))
+    .limit(100);
 }
 
 export async function getAllHints() {

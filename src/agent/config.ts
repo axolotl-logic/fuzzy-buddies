@@ -7,7 +7,8 @@ const ConfigSchema = z.object({
     .string()
     .toLowerCase()
     .transform((t) => JSON.parse(t) as unknown)
-    .pipe(z.boolean()),
+    .pipe(z.boolean())
+    .default("false"),
 });
 
 export const config = ConfigSchema.parse(process.env);
